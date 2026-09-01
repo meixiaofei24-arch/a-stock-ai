@@ -1750,7 +1750,54 @@ document
 /* =========================
    初始化
 ========================= */
+// ==============================
+// AI自动分析
+// ==============================
 
+async function aiAnalyze() {
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        holdings: holdings
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("AI分析结果：", data.result);
+
+      const aiResult = document.getElementById("aiResult");
+
+      if (aiResult) {
+        aiResult.innerText = data.result;
+      }
+    }
+
+  } catch (error) {
+    console.error("AI连接失败：", error);
+  }
+}
+
+
+// ==============================
+// 初始化
+// ==============================
+
+renderSectors();
+renderStocks();
+renderHoldings();
+
+aiAnalyze();
+
+</script>
+
+</body>
+</html>
 renderSectors();
 
 renderStocks();
