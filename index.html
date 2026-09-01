@@ -1,1032 +1,1426 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A股 AI 持仓助手 V2.1</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>A股 AI 持仓助手 V2.2</title>
 
-    body {
-      margin: 0;
-      background: #f5f7fb;
-      color: #1b2438;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "PingFang SC",
-        "Microsoft YaHei",
-        Arial,
-        sans-serif;
-    }
+<style>
 
-    .app {
-      max-width: 760px;
-      margin: auto;
-      padding: 16px 14px 60px;
-    }
+*{
+  box-sizing:border-box;
+}
 
-    .header {
-      margin: 6px 2px 18px;
-    }
+body{
+  margin:0;
+  background:#f4f6fa;
+  color:#182033;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
 
-    .title {
-      font-size: 27px;
-      font-weight: 800;
-    }
+.app{
+  max-width:760px;
+  margin:auto;
+  padding:16px 14px 60px;
+}
 
-    .sub {
-      margin-top: 6px;
-      color: #8b94a5;
-      font-size: 13px;
-    }
+.header{
+  margin:6px 2px 18px;
+}
 
-    .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 5px 18px rgba(25, 35, 70, .05);
-    }
+.title{
+  font-size:27px;
+  font-weight:800;
+}
 
-    .card-title {
-      font-size: 19px;
-      font-weight: 780;
-      margin-bottom: 14px;
-    }
+.sub{
+  margin-top:6px;
+  color:#8b94a5;
+  font-size:13px;
+}
 
-    .mini-note {
-      color: #98a0ad;
-      font-size: 12px;
-      margin-top: -5px;
-      margin-bottom: 12px;
-      line-height: 1.6;
-    }
+.card{
+  background:white;
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
+  box-shadow:0 5px 18px rgba(25,35,70,.05);
+}
 
-    .overview {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 9px;
-    }
+.card-title{
+  font-size:19px;
+  font-weight:800;
+  margin-bottom:14px;
+}
 
-    .metric {
-      background: #f5f7fb;
-      padding: 13px 6px;
-      text-align: center;
-      border-radius: 13px;
-    }
+.note{
+  color:#929aaa;
+  font-size:12px;
+  line-height:1.6;
+  margin-bottom:12px;
+}
 
-    .metric span {
-      display: block;
-      color: #929aaa;
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
 
-    .metric b {
-      font-size: 16px;
-    }
+/* 账户 */
 
-    .market-box {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
+.overview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+}
 
-    .market-item {
-      background: #f7f9fc;
-      border-radius: 14px;
-      padding: 13px;
-    }
+.metric{
+  background:#f5f7fb;
+  padding:13px 6px;
+  border-radius:13px;
+  text-align:center;
+}
 
-    .market-item span {
-      color: #8d95a4;
-      font-size: 12px;
-    }
+.metric span{
+  display:block;
+  color:#929aaa;
+  font-size:12px;
+  margin-bottom:6px;
+}
 
-    .market-item b {
-      display: block;
-      margin-top: 7px;
-      font-size: 16px;
-    }
+.metric b{
+  font-size:16px;
+}
 
-    .sector {
-      padding: 13px 0;
-      border-bottom: 1px solid #eef1f5;
-    }
 
-    .sector:last-child {
-      border-bottom: none;
-    }
+/* 标签 */
 
-    .sector-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.tag{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+}
 
-    .sector-name {
-      font-size: 16px;
-      font-weight: 750;
-    }
+.green{
+  background:#e9f8ef;
+  color:#17834a;
+}
 
-    .score {
-      font-weight: 750;
-      font-size: 14px;
-    }
+.yellow{
+  background:#fff5d7;
+  color:#987000;
+}
 
-    .bar {
-      width: 100%;
-      height: 7px;
-      background: #edf0f5;
-      border-radius: 20px;
-      margin-top: 9px;
-      overflow: hidden;
-    }
+.orange{
+  background:#fff0e5;
+  color:#c35e18;
+}
 
-    .bar-inner {
-      height: 100%;
-      background: #4f7cf3;
-      border-radius: 20px;
-    }
+.red{
+  background:#ffeaea;
+  color:#d13a3a;
+}
 
-    .sector-desc {
-      margin-top: 8px;
-      color: #8992a2;
-      font-size: 12px;
-      line-height: 1.6;
-    }
+.blue{
+  background:#eaf1ff;
+  color:#2867d5;
+}
 
-    .news {
-      padding: 11px 0;
-      border-bottom: 1px solid #eef1f4;
-    }
 
-    .news:last-child {
-      border-bottom: none;
-    }
+/* 市场 */
 
-    .news b {
-      font-size: 15px;
-    }
+.market-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
 
-    .news p {
-      margin: 6px 0 0;
-      color: #858e9e;
-      font-size: 13px;
-      line-height: 1.65;
-    }
+.market{
+  padding:13px;
+  background:#f7f9fc;
+  border-radius:14px;
+}
 
-    .watch {
-      background: #f8faff;
-      border-radius: 15px;
-      padding: 13px;
-      margin-bottom: 10px;
-    }
+.market span{
+  font-size:12px;
+  color:#8f97a6;
+}
 
-    .watch-title {
-      font-weight: 760;
-      margin-bottom: 9px;
-    }
+.market b{
+  display:block;
+  margin-top:7px;
+  font-size:16px;
+}
 
-    .watch-stock {
-      display: flex;
-      justify-content: space-between;
-      padding: 7px 0;
-      font-size: 13px;
-      border-bottom: 1px dashed #e4e9f0;
-    }
 
-    .watch-stock:last-child {
-      border-bottom: none;
-    }
+/* 板块 */
 
-    .watch-stock span:last-child {
-      color: #7e8898;
-    }
+.sector{
+  padding:13px 0;
+  border-bottom:1px solid #edf0f4;
+}
 
-    .flow {
-      padding: 13px;
-      border-radius: 14px;
-      margin-bottom: 10px;
-      background: #f8f9fb;
-    }
+.sector:last-child{
+  border-bottom:none;
+}
 
-    .flow-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.sector-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    .flow-name {
-      font-weight: 750;
-      font-size: 15px;
-    }
+.sector-name{
+  font-weight:750;
+}
 
-    .flow-text {
-      margin-top: 7px;
-      color: #858e9c;
-      font-size: 13px;
-      line-height: 1.65;
-    }
+.score{
+  font-weight:800;
+}
 
-    .stock {
-      padding: 14px 0;
-      border-bottom: 1px solid #edf0f3;
-    }
+.bar{
+  height:7px;
+  background:#edf0f5;
+  border-radius:20px;
+  margin-top:9px;
+  overflow:hidden;
+}
 
-    .stock:last-child {
-      border-bottom: none;
-    }
+.bar-inner{
+  height:100%;
+  background:#4f7cf3;
+}
 
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+.sector-desc{
+  color:#8992a2;
+  font-size:12px;
+  margin-top:8px;
+  line-height:1.6;
+}
 
-    .name {
-      font-weight: 760;
-      font-size: 17px;
-    }
 
-    .code {
-      color: #a0a6b2;
-      font-size: 12px;
-      margin-left: 5px;
-    }
+/* 短线雷达 */
 
-    .tag {
-      padding: 5px 9px;
-      border-radius: 20px;
-      font-size: 12px;
-    }
+.radar-head{
+  background:linear-gradient(135deg,#1e2c55,#3858a5);
+  border-radius:16px;
+  color:white;
+  padding:16px;
+  margin-bottom:13px;
+}
 
-    .green {
-      color: #17834a;
-      background: #e9f8ef;
-    }
+.radar-big{
+  font-size:21px;
+  font-weight:800;
+}
 
-    .yellow {
-      color: #987000;
-      background: #fff5d7;
-    }
+.radar-small{
+  font-size:12px;
+  opacity:.85;
+  margin-top:6px;
+  line-height:1.6;
+}
 
-    .orange {
-      color: #c35e18;
-      background: #fff0e5;
-    }
+.short-card{
+  border:1px solid #edf0f5;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
+}
 
-    .red {
-      color: #d13a3a;
-      background: #ffeaea;
-    }
+.short-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    .blue {
-      color: #2867d5;
-      background: #eaf1ff;
-    }
+.short-name{
+  font-size:18px;
+  font-weight:800;
+}
 
-    .info {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      font-size: 13px;
-      color: #8a92a2;
-    }
+.short-code{
+  color:#9ca3af;
+  font-size:12px;
+}
 
-    .info b {
-      display: block;
-      margin-top: 4px;
-      color: #283148;
-      font-size: 15px;
-    }
+.total-score{
+  font-size:22px;
+  font-weight:850;
+}
 
-    .tip {
-      background: #fff8e8;
-      border-radius: 14px;
-      padding: 14px;
-      line-height: 1.75;
-      font-size: 14px;
-    }
+.short-sector{
+  margin-top:7px;
+  color:#667085;
+  font-size:13px;
+}
 
-    .upload-box {
-      border: 2px dashed #dbe1ea;
-      border-radius: 15px;
-      padding: 22px 12px;
-      text-align: center;
-    }
+.score-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin-top:12px;
+}
 
-    input[type="file"] {
-      display: none;
-    }
+.score-box{
+  background:#f5f7fb;
+  text-align:center;
+  padding:9px 4px;
+  border-radius:11px;
+}
 
-    .button {
-      display: block;
-      width: 100%;
-      border: 0;
-      border-radius: 14px;
-      padding: 15px;
-      margin-top: 12px;
-      background: #2469df;
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      text-align: center;
-      cursor: pointer;
-    }
+.score-box span{
+  display:block;
+  color:#9199a8;
+  font-size:11px;
+}
 
-    .secondary {
-      background: #edf3ff;
-      color: #2469df;
-    }
+.score-box b{
+  display:block;
+  margin-top:4px;
+  font-size:14px;
+}
 
-    #preview {
-      max-width: 100%;
-      border-radius: 12px;
-      margin-top: 12px;
-      display: none;
-    }
+.condition{
+  margin-top:12px;
+  background:#f8f9fc;
+  border-radius:12px;
+  padding:11px;
+  font-size:13px;
+  line-height:1.7;
+}
 
-    .date {
-      color: #9299a8;
-      font-size: 13px;
-      text-align: center;
-      margin-top: 10px;
-    }
+.condition b{
+  color:#344054;
+}
 
-    .footer {
-      color: #9ca3af;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.7;
-      margin: 20px 8px;
-    }
+.action-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:9px;
+}
 
-    @media (max-width: 420px) {
-      .title {
-        font-size: 24px;
-      }
+.action{
+  background:#f7f9fc;
+  border-radius:11px;
+  padding:10px;
+  font-size:12px;
+  line-height:1.5;
+}
 
-      .metric b {
-        font-size: 14px;
-      }
-    }
-  </style>
+
+/* 行业 */
+
+.news{
+  padding:11px 0;
+  border-bottom:1px solid #eef1f4;
+}
+
+.news:last-child{
+  border-bottom:none;
+}
+
+.news b{
+  font-size:15px;
+}
+
+.news p{
+  color:#858e9e;
+  font-size:13px;
+  line-height:1.65;
+  margin:6px 0 0;
+}
+
+
+/* 观察池 */
+
+.watch{
+  background:#f8faff;
+  border-radius:15px;
+  padding:13px;
+  margin-bottom:10px;
+}
+
+.watch-title{
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.watch-stock{
+  display:flex;
+  justify-content:space-between;
+  padding:7px 0;
+  border-bottom:1px dashed #e4e9f0;
+  font-size:13px;
+}
+
+.watch-stock:last-child{
+  border-bottom:none;
+}
+
+
+/* 资金 */
+
+.flow{
+  padding:13px;
+  border-radius:14px;
+  background:#f8f9fb;
+  margin-bottom:10px;
+}
+
+.flow-top{
+  display:flex;
+  justify-content:space-between;
+}
+
+.flow-name{
+  font-weight:750;
+}
+
+.flow-text{
+  color:#858e9c;
+  font-size:13px;
+  margin-top:7px;
+  line-height:1.6;
+}
+
+
+/* 持仓 */
+
+.stock{
+  padding:14px 0;
+  border-bottom:1px solid #edf0f3;
+}
+
+.stock:last-child{
+  border-bottom:none;
+}
+
+.stock-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.name{
+  font-weight:800;
+  font-size:17px;
+}
+
+.code{
+  color:#a0a6b2;
+  font-size:12px;
+  margin-left:5px;
+}
+
+.info{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  margin-top:10px;
+  font-size:13px;
+  color:#8a92a2;
+}
+
+.info b{
+  display:block;
+  color:#283148;
+  font-size:15px;
+  margin-top:4px;
+}
+
+
+/* 策略 */
+
+.tip{
+  background:#fff8e8;
+  border-radius:14px;
+  padding:14px;
+  font-size:14px;
+  line-height:1.8;
+}
+
+
+/* 上传 */
+
+.upload{
+  border:2px dashed #dbe1ea;
+  padding:22px 12px;
+  border-radius:15px;
+  text-align:center;
+}
+
+input[type=file]{
+  display:none;
+}
+
+.button{
+  display:block;
+  width:100%;
+  padding:15px;
+  border:0;
+  border-radius:14px;
+  background:#2469df;
+  color:white;
+  font-size:16px;
+  font-weight:700;
+  margin-top:12px;
+}
+
+.secondary{
+  background:#edf3ff;
+  color:#2469df;
+}
+
+#preview{
+  max-width:100%;
+  margin-top:12px;
+  border-radius:12px;
+  display:none;
+}
+
+.date{
+  color:#9299a8;
+  font-size:12px;
+  text-align:center;
+  margin-top:10px;
+}
+
+.footer{
+  text-align:center;
+  color:#9ca3af;
+  font-size:12px;
+  line-height:1.7;
+  margin-top:20px;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-  <div class="header">
-    <div class="title">📊 A股 AI 持仓助手 V2.1</div>
-    <div class="sub">
-      市场 · 板块 · 资金 · 持仓 · 每日复盘
-    </div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">💰 我的账户</div>
-
-    <div class="overview">
-      <div class="metric">
-        <span>总资产</span>
-        <b>¥99,294</b>
-      </div>
-
-      <div class="metric">
-        <span>仓位</span>
-        <b>98.8%</b>
-      </div>
-
-      <div class="metric">
-        <span>风险</span>
-        <b>偏高</b>
-      </div>
-    </div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">📈 今日市场环境</div>
-
-    <div class="mini-note">
-      当前为手工策略展示区，后续每天可根据最新行情更新。
-    </div>
-
-    <div class="market-box">
-
-      <div class="market-item">
-        <span>市场状态</span>
-        <b>震荡分化</b>
-      </div>
-
-      <div class="market-item">
-        <span>短线情绪</span>
-        <b>中性</b>
-      </div>
-
-      <div class="market-item">
-        <span>操作难度</span>
-        <b>偏高</b>
-      </div>
-
-      <div class="market-item">
-        <span>仓位建议</span>
-        <b>控制仓位</b>
-      </div>
-
-    </div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">🔥 板块轮动</div>
-
-    <div class="sector">
-      <div class="sector-top">
-        <div class="sector-name">AI硬件 / PCB</div>
-        <div class="score">85分</div>
-      </div>
-      <div class="bar">
-        <div class="bar-inner" style="width:85%"></div>
-      </div>
-      <div class="sector-desc">
-        中期活跃度较高，但高位个股波动也大，优先关注趋势保持较好的品种。
-      </div>
-    </div>
-
-
-    <div class="sector">
-      <div class="sector-top">
-        <div class="sector-name">有色金属</div>
-        <div class="score">82分</div>
-      </div>
-      <div class="bar">
-        <div class="bar-inner" style="width:82%"></div>
-      </div>
-      <div class="sector-desc">
-        资源方向保持较强韧性，适合观察强势趋势股，不适合追连续加速。
-      </div>
-    </div>
-
-
-    <div class="sector">
-      <div class="sector-top">
-        <div class="sector-name">机器人</div>
-        <div class="score">76分</div>
-      </div>
-      <div class="bar">
-        <div class="bar-inner" style="width:76%"></div>
-      </div>
-      <div class="sector-desc">
-        题材活跃，分化明显，重点看核心标的能否持续获得资金承接。
-      </div>
-    </div>
-
-
-    <div class="sector">
-      <div class="sector-top">
-        <div class="sector-name">低空经济</div>
-        <div class="score">71分</div>
-      </div>
-      <div class="bar">
-        <div class="bar-inner" style="width:71%"></div>
-      </div>
-      <div class="sector-desc">
-        政策逻辑长期存在，短线需要等待资金重新集中。
-      </div>
-    </div>
-
-
-    <div class="sector">
-      <div class="sector-top">
-        <div class="sector-name">新材料</div>
-        <div class="score">69分</div>
-      </div>
-      <div class="bar">
-        <div class="bar-inner" style="width:69%"></div>
-      </div>
-      <div class="sector-desc">
-        个股机会多于整体板块机会，适合精选而不是全面追涨。
-      </div>
-    </div>
-
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">📰 行业动态</div>
-
-    <div class="news">
-      <b>🤖 AI / 算力</b>
-      <p>
-        继续关注算力基础设施、服务器、PCB、液冷以及高速连接等细分方向。
-      </p>
-    </div>
-
-    <div class="news">
-      <b>✈️ 低空经济</b>
-      <p>
-        长期仍具政策驱动，但短线需要观察订单、产业落地和资金重新回流。
-      </p>
-    </div>
-
-    <div class="news">
-      <b>🦾 机器人</b>
-      <p>
-        关注减速器、丝杠、伺服系统、传感器及机器人核心零部件。
-      </p>
-    </div>
-
-    <div class="news">
-      <b>⛏️ 有色资源</b>
-      <p>
-        商品价格和全球供需变化仍是主要驱动因素，趋势品种优先。
-      </p>
-    </div>
-
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">⭐ 板块股票观察池</div>
-
-    <div class="mini-note">
-      仅作为每日跟踪池，不代表直接买入建议。
-    </div>
-
-
-    <div class="watch">
-
-      <div class="watch-title">
-        💻 AI硬件 / PCB
-      </div>
-
-      <div class="watch-stock">
-        <span>生益科技</span>
-        <span>趋势观察</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>沪电股份</span>
-        <span>核心观察</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>深南电路</span>
-        <span>中线观察</span>
-      </div>
-
-    </div>
-
-
-    <div class="watch">
-
-      <div class="watch-title">
-        🤖 机器人
-      </div>
-
-      <div class="watch-stock">
-        <span>绿的谐波</span>
-        <span>核心零部件</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>拓普集团</span>
-        <span>产业链观察</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>鸣志电器</span>
-        <span>趋势观察</span>
-      </div>
-
-    </div>
-
-
-    <div class="watch">
-
-      <div class="watch-title">
-        ✈️ 低空经济
-      </div>
-
-      <div class="watch-stock">
-        <span>中信海直</span>
-        <span>运营方向</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>宗申动力</span>
-        <span>产业链观察</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>万丰奥威</span>
-        <span>强弱观察</span>
-      </div>
-
-    </div>
-
-
-    <div class="watch">
-
-      <div class="watch-title">
-        ⛏️ 有色金属
-      </div>
-
-      <div class="watch-stock">
-        <span>紫金矿业</span>
-        <span>趋势核心</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>洛阳钼业</span>
-        <span>资源核心</span>
-      </div>
-
-      <div class="watch-stock">
-        <span>中国铝业</span>
-        <span>周期观察</span>
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">⚡ 机构 / 资金异动</div>
-
-    <div class="mini-note">
-      后续每天结合公开资金流、龙虎榜、机构调研、大宗交易等信息更新。
-    </div>
-
-
-    <div class="flow">
-
-      <div class="flow-top">
-        <div class="flow-name">
-          🔥 主力资金强度
-        </div>
-
-        <span class="tag red">
-          重点
-        </span>
-      </div>
-
-      <div class="flow-text">
-        优先寻找连续资金净流入、同时所属板块正在走强的股票。
-      </div>
-
-    </div>
-
-
-    <div class="flow">
-
-      <div class="flow-top">
-        <div class="flow-name">
-          🏦 龙虎榜机构席位
-        </div>
-
-        <span class="tag blue">
-          观察
-        </span>
-      </div>
-
-      <div class="flow-text">
-        关注机构专用席位净买入，但不单独把龙虎榜作为买入依据。
-      </div>
-
-    </div>
-
-
-    <div class="flow">
-
-      <div class="flow-top">
-        <div class="flow-name">
-          🔎 机构调研
-        </div>
-
-        <span class="tag green">
-          中线
-        </span>
-      </div>
-
-      <div class="flow-text">
-        重点跟踪近期机构密集调研，同时基本面和行业景气度改善的公司。
-      </div>
-
-    </div>
-
-
-    <div class="flow">
-
-      <div class="flow-top">
-        <div class="flow-name">
-          💰 大宗交易
-        </div>
-
-        <span class="tag yellow">
-          辅助
-        </span>
-      </div>
-
-      <div class="flow-text">
-        观察大额成交和折溢价变化，用于辅助判断机构资金行为。
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">💼 我的持仓</div>
-
-    <div id="stocks"></div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">🧠 明日策略</div>
-
-    <div class="tip">
-
-      ① 当前仓位接近满仓，优先考虑风险控制。<br><br>
-
-      ② 强势股票优先保留，不轻易把强股卖掉去补弱股。<br><br>
-
-      ③ 生益科技、深科技、圣泉集团重点观察能否重新转强。<br><br>
-
-      ④ 联合精密、宏桥控股、晶华新材继续观察相对强度。<br><br>
-
-      ⑤ 新开仓优先选择：
-      <b>强板块 + 资金流入 + 个股趋势向上</b>
-      三个条件同时满足的股票。
-
-    </div>
-  </div>
-
-
-  <div class="card">
-    <div class="card-title">📷 同花顺持仓截图</div>
-
-    <div class="upload-box">
-
-      <div>
-        每天收盘后选择最新持仓截图。
-      </div>
-
-      <label class="button" for="fileInput">
-        选择截图
-      </label>
-
-      <input
-        type="file"
-        id="fileInput"
-        accept="image/*"
-        onchange="previewImage(event)"
-      >
-
-      <img id="preview">
-
-    </div>
-
-    <button
-      class="button secondary"
-      onclick="showHelp()"
-    >
-      🤖 每天怎么分析？
-    </button>
-
-    <div class="date" id="dateText"></div>
-
-  </div>
-
-
-  <div class="footer">
-
-    V2.1 稳定版<br>
-
-    板块、行业、资金信息需要根据每日行情更新。<br>
-
-    页面中的观察池仅用于研究和风险管理，
-    不构成收益保证或买卖承诺。
-
-  </div>
+<div class="header">
+
+<div class="title">
+📊 A股 AI 持仓助手 V2.2
+</div>
+
+<div class="sub">
+市场 · 板块 · 短线 · 资金 · 持仓 · 每日复盘
+</div>
 
 </div>
 
 
+<!--账户-->
+
+<div class="card">
+
+<div class="card-title">
+💰 我的账户
+</div>
+
+<div class="overview">
+
+<div class="metric">
+<span>总资产</span>
+<b>¥99,294</b>
+</div>
+
+<div class="metric">
+<span>仓位</span>
+<b>98.8%</b>
+</div>
+
+<div class="metric">
+<span>风险</span>
+<b>偏高</b>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!--市场-->
+
+<div class="card">
+
+<div class="card-title">
+📈 今日市场环境
+</div>
+
+<div class="market-grid">
+
+<div class="market">
+<span>市场状态</span>
+<b>震荡分化</b>
+</div>
+
+<div class="market">
+<span>短线情绪</span>
+<b>中性</b>
+</div>
+
+<div class="market">
+<span>操作难度</span>
+<b>偏高</b>
+</div>
+
+<div class="market">
+<span>策略</span>
+<b>控制仓位</b>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!--板块-->
+
+<div class="card">
+
+<div class="card-title">
+🔥 今日最强板块 Top 5
+</div>
+
+<div class="note">
+当前为展示模板，每天根据最新行情更新。
+</div>
+
+<div id="sectorList"></div>
+
+</div>
+
+
+
+<!--短线雷达-->
+
+<div class="card">
+
+<div class="card-title">
+⚡ A股短线雷达
+</div>
+
+<div class="radar-head">
+
+<div class="radar-big">
+明日短线候选 Top 3
+</div>
+
+<div class="radar-small">
+核心逻辑：
+强板块 + 强个股 + 资金承接 + 趋势确认。
+不是评分高就直接买，必须等待触发条件。
+</div>
+
+</div>
+
+<div id="shortList"></div>
+
+</div>
+
+
+
+<!--行业动态-->
+
+<div class="card">
+
+<div class="card-title">
+📰 行业动态
+</div>
+
+<div class="news">
+<b>💻 AI / 算力 / PCB</b>
+<p>
+重点观察服务器、PCB、高速连接、液冷、先进封装等细分方向。
+</p>
+</div>
+
+<div class="news">
+<b>🤖 机器人</b>
+<p>
+关注减速器、丝杠、传感器、伺服系统和核心零部件。
+</p>
+</div>
+
+<div class="news">
+<b>✈️ 低空经济</b>
+<p>
+重点跟踪政策落地、订单增长和资金重新回流。
+</p>
+</div>
+
+<div class="news">
+<b>⛏️ 有色资源</b>
+<p>
+观察商品价格、供需变化和趋势核心品种。
+</p>
+</div>
+
+</div>
+
+
+
+<!--观察池-->
+
+<div class="card">
+
+<div class="card-title">
+⭐ 板块股票观察池
+</div>
+
+<div class="note">
+用于每天筛选候选股票，不代表直接买入。
+</div>
+
+<div class="watch">
+
+<div class="watch-title">
+💻 AI硬件 / PCB
+</div>
+
+<div class="watch-stock">
+<span>沪电股份</span>
+<span>核心观察</span>
+</div>
+
+<div class="watch-stock">
+<span>生益科技</span>
+<span>趋势观察</span>
+</div>
+
+<div class="watch-stock">
+<span>深南电路</span>
+<span>中线观察</span>
+</div>
+
+</div>
+
+
+<div class="watch">
+
+<div class="watch-title">
+🤖 机器人
+</div>
+
+<div class="watch-stock">
+<span>绿的谐波</span>
+<span>核心零部件</span>
+</div>
+
+<div class="watch-stock">
+<span>拓普集团</span>
+<span>产业链</span>
+</div>
+
+<div class="watch-stock">
+<span>鸣志电器</span>
+<span>趋势观察</span>
+</div>
+
+</div>
+
+
+<div class="watch">
+
+<div class="watch-title">
+✈️ 低空经济
+</div>
+
+<div class="watch-stock">
+<span>中信海直</span>
+<span>运营方向</span>
+</div>
+
+<div class="watch-stock">
+<span>宗申动力</span>
+<span>产业链</span>
+</div>
+
+<div class="watch-stock">
+<span>万丰奥威</span>
+<span>强弱观察</span>
+</div>
+
+</div>
+
+
+<div class="watch">
+
+<div class="watch-title">
+⛏️ 有色
+</div>
+
+<div class="watch-stock">
+<span>紫金矿业</span>
+<span>趋势核心</span>
+</div>
+
+<div class="watch-stock">
+<span>洛阳钼业</span>
+<span>资源核心</span>
+</div>
+
+<div class="watch-stock">
+<span>中国铝业</span>
+<span>周期观察</span>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!--资金异动-->
+
+<div class="card">
+
+<div class="card-title">
+🏦 机构 / 资金异动
+</div>
+
+<div class="flow">
+
+<div class="flow-top">
+<div class="flow-name">
+🔥 主力连续流入
+</div>
+
+<span class="tag red">
+高关注
+</span>
+
+</div>
+
+<div class="flow-text">
+重点寻找连续2～3日资金流入，同时所属板块强度较高的股票。
+</div>
+
+</div>
+
+
+<div class="flow">
+
+<div class="flow-top">
+
+<div class="flow-name">
+🏦 龙虎榜机构
+</div>
+
+<span class="tag blue">
+观察
+</span>
+
+</div>
+
+<div class="flow-text">
+观察机构专用席位净买入、净卖出及资金集中度。
+</div>
+
+</div>
+
+
+<div class="flow">
+
+<div class="flow-top">
+
+<div class="flow-name">
+🔎 机构调研
+</div>
+
+<span class="tag green">
+中线
+</span>
+
+</div>
+
+<div class="flow-text">
+关注短期机构密集调研，同时行业景气度改善的公司。
+</div>
+
+</div>
+
+
+<div class="flow">
+
+<div class="flow-top">
+
+<div class="flow-name">
+💰 大宗交易
+</div>
+
+<span class="tag yellow">
+辅助
+</span>
+
+</div>
+
+<div class="flow-text">
+观察成交规模、折溢价以及是否出现连续大额交易。
+</div>
+
+</div>
+
+</div>
+
+
+
+<!--持仓-->
+
+<div class="card">
+
+<div class="card-title">
+💼 我的持仓
+</div>
+
+<div id="stocks"></div>
+
+</div>
+
+
+
+<!--策略-->
+
+<div class="card">
+
+<div class="card-title">
+🧠 明日交易纪律
+</div>
+
+<div class="tip">
+
+① 先看板块，再看股票。<br><br>
+
+② 短线候选评分 ≥85 分才进入重点观察。<br><br>
+
+③ 每只首次仓位控制在约 10%～15%。<br><br>
+
+④ 同时短线持有 2～4 只即可。<br><br>
+
+⑤ 高开过多、板块转弱、资金承接差，直接放弃。<br><br>
+
+⑥ 交易逻辑失效，不靠补仓降低成本。<br><br>
+
+⑦ 弱市允许空仓。
+
+</div>
+
+</div>
+
+
+
+<!--截图-->
+
+<div class="card">
+
+<div class="card-title">
+📷 同花顺持仓截图
+</div>
+
+<div class="upload">
+
+每天收盘后上传最新持仓截图。
+
+<label class="button" for="fileInput">
+选择截图
+</label>
+
+<input
+type="file"
+id="fileInput"
+accept="image/*"
+onchange="previewImage(event)"
+>
+
+<img id="preview">
+
+</div>
+
+<button
+class="button secondary"
+onclick="showHelp()"
+>
+🤖 每天怎么分析？
+</button>
+
+<div class="date" id="dateText"></div>
+
+</div>
+
+
+<div class="footer">
+
+V2.2 短线雷达版<br>
+
+当前网页为稳定展示版。<br>
+
+行情、板块、资金和候选股票需根据每日公开数据更新。<br>
+
+短线交易风险较高，
+评分仅用于筛选，不构成收益保证。
+
+</div>
+
+</div>
+
+
+
 <script>
 
-const holdings = [
 
-  {
-    name: "宏桥控股",
-    code: "01378.HK",
-    cost: 18.421,
-    price: 18.700,
-    tag: "偏强",
-    level: "green"
-  },
+/* =======================
+   今日板块
+======================= */
 
-  {
-    name: "晶华新材",
-    code: "603683",
-    cost: 17.230,
-    price: 17.270,
-    tag: "持有观察",
-    level: "green"
-  },
+const sectors = [
 
-  {
-    name: "联合精密",
-    code: "001268",
-    cost: 26.012,
-    price: 26.390,
-    tag: "相对强",
-    level: "green"
-  },
+{
+name:"AI硬件 / PCB",
+score:85,
+desc:"资金活跃度较高，重点观察趋势核心。"
+},
 
-  {
-    name: "圣泉集团",
-    code: "605589",
-    cost: 39.477,
-    price: 38.660,
-    tag: "重点观察",
-    level: "orange"
-  },
+{
+name:"有色金属",
+score:82,
+desc:"趋势韧性较强，关注核心资源品种。"
+},
 
-  {
-    name: "深科技",
-    code: "000021",
-    cost: 37.711,
-    price: 36.530,
-    tag: "偏弱",
-    level: "orange"
-  },
+{
+name:"机器人",
+score:76,
+desc:"题材活跃但分化较大。"
+},
 
-  {
-    name: "生益科技",
-    code: "600183",
-    cost: 150.334,
-    price: 144.420,
-    tag: "重点防守",
-    level: "red"
-  }
+{
+name:"低空经济",
+score:71,
+desc:"等待资金重新集中。"
+},
+
+{
+name:"新材料",
+score:69,
+desc:"个股机会强于板块整体。"
+}
 
 ];
 
 
-function renderStocks() {
+function renderSectors(){
 
-  const box =
-    document.getElementById("stocks");
+const box =
+document.getElementById("sectorList");
 
-  box.innerHTML =
-    holdings.map(stock => {
+box.innerHTML =
+sectors.map((s,index)=>`
 
-      const change =
-        ((stock.price - stock.cost)
-        / stock.cost) * 100;
+<div class="sector">
 
-      const changeText =
-        (change >= 0 ? "+" : "")
-        + change.toFixed(2)
-        + "%";
+<div class="sector-top">
 
-      return `
+<div class="sector-name">
+${index+1}. ${s.name}
+</div>
 
-        <div class="stock">
+<div class="score">
+${s.score}分
+</div>
 
-          <div class="top">
+</div>
 
-            <div>
+<div class="bar">
+<div
+class="bar-inner"
+style="width:${s.score}%">
+</div>
+</div>
 
-              <span class="name">
-                ${stock.name}
-              </span>
+<div class="sector-desc">
+${s.desc}
+</div>
 
-              <span class="code">
-                ${stock.code}
-              </span>
+</div>
 
-            </div>
-
-            <span class="tag ${stock.level}">
-              ${stock.tag}
-            </span>
-
-          </div>
-
-
-          <div class="info">
-
-            <div>
-              成本
-              <b>${stock.cost}</b>
-            </div>
-
-            <div>
-              参考价
-              <b>${stock.price}</b>
-            </div>
-
-            <div>
-              浮动
-              <b>${changeText}</b>
-            </div>
-
-          </div>
-
-        </div>
-
-      `;
-
-    }).join("");
+`).join("");
 
 }
 
 
-function previewImage(event) {
 
-  const file =
-    event.target.files[0];
+/* =======================
+   短线候选
+======================= */
 
-  if (!file) return;
+const shortStocks = [
 
-  const img =
-    document.getElementById("preview");
+{
+name:"沪电股份",
+code:"002463",
+sector:"AI硬件 / PCB",
+total:89,
+sectorScore:92,
+money:87,
+trend:90,
+risk:"中",
+riskClass:"yellow",
+position:"10%～15%",
+trigger:"板块保持强势，个股突破关键位置后出现持续承接。",
+cancel:"明显高开低走、板块快速转弱或放量跌破关键位。"
+},
 
-  img.src =
-    URL.createObjectURL(file);
+{
+name:"绿的谐波",
+code:"688017",
+sector:"机器人",
+total:86,
+sectorScore:84,
+money:85,
+trend:89,
+risk:"中高",
+riskClass:"orange",
+position:"约10%",
+trigger:"机器人板块整体走强，个股放量突破并保持强势。",
+cancel:"冲高快速回落，量价明显背离或板块退潮。"
+},
 
-  img.style.display =
-    "block";
+{
+name:"紫金矿业",
+code:"601899",
+sector:"有色金属",
+total:84,
+sectorScore:88,
+money:82,
+trend:83,
+risk:"中",
+riskClass:"yellow",
+position:"10%～15%",
+trigger:"有色板块保持前列，个股趋势继续向上。",
+cancel:"板块转弱同时个股跌破短线关键支撑。"
+}
 
-  localStorage.setItem(
-    "lastUpload",
-    new Date().toLocaleString()
-  );
+];
 
-  updateDate();
+
+function renderShortStocks(){
+
+const box =
+document.getElementById("shortList");
+
+box.innerHTML =
+shortStocks.map((s,index)=>`
+
+<div class="short-card">
+
+<div class="short-top">
+
+<div>
+
+<div class="short-name">
+${index+1}. ${s.name}
+</div>
+
+<div class="short-code">
+${s.code}
+</div>
+
+</div>
+
+<div class="total-score">
+${s.total}
+</div>
+
+</div>
+
+
+<div class="short-sector">
+所属板块：${s.sector}
+</div>
+
+
+<div class="score-grid">
+
+<div class="score-box">
+<span>板块</span>
+<b>${s.sectorScore}</b>
+</div>
+
+<div class="score-box">
+<span>资金</span>
+<b>${s.money}</b>
+</div>
+
+<div class="score-box">
+<span>趋势</span>
+<b>${s.trend}</b>
+</div>
+
+</div>
+
+
+<div class="condition">
+
+<b>✅ 关注条件</b><br>
+${s.trigger}
+
+<br><br>
+
+<b>❌ 放弃条件</b><br>
+${s.cancel}
+
+</div>
+
+
+<div class="action-row">
+
+<div class="action">
+
+风险：
+<span class="tag ${s.riskClass}">
+${s.risk}
+</span>
+
+</div>
+
+<div class="action">
+
+参考观察仓位：
+<b>${s.position}</b>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
 
 }
 
 
-function updateDate() {
 
-  const saved =
-    localStorage.getItem("lastUpload");
+/* =======================
+   我的持仓
+======================= */
 
-  document
-    .getElementById("dateText")
-    .innerText =
-      saved
-      ? "最近上传：" + saved
-      : "今天还没有上传持仓截图";
+const holdings = [
+
+{
+name:"宏桥控股",
+code:"01378.HK",
+cost:18.421,
+price:18.700,
+tag:"偏强",
+level:"green"
+},
+
+{
+name:"晶华新材",
+code:"603683",
+cost:17.230,
+price:17.270,
+tag:"持有观察",
+level:"green"
+},
+
+{
+name:"联合精密",
+code:"001268",
+cost:26.012,
+price:26.390,
+tag:"相对强",
+level:"green"
+},
+
+{
+name:"圣泉集团",
+code:"605589",
+cost:39.477,
+price:38.660,
+tag:"重点观察",
+level:"orange"
+},
+
+{
+name:"深科技",
+code:"000021",
+cost:37.711,
+price:36.530,
+tag:"偏弱",
+level:"orange"
+},
+
+{
+name:"生益科技",
+code:"600183",
+cost:150.334,
+price:144.420,
+tag:"重点防守",
+level:"red"
+}
+
+];
+
+
+function renderStocks(){
+
+const box =
+document.getElementById("stocks");
+
+box.innerHTML =
+holdings.map(stock=>{
+
+const change =
+((stock.price-stock.cost)
+/stock.cost)*100;
+
+const changeText =
+(change>=0?"+":"")
++change.toFixed(2)
++"%";
+
+return`
+
+<div class="stock">
+
+<div class="stock-top">
+
+<div>
+
+<span class="name">
+${stock.name}
+</span>
+
+<span class="code">
+${stock.code}
+</span>
+
+</div>
+
+<span class="tag ${stock.level}">
+${stock.tag}
+</span>
+
+</div>
+
+
+<div class="info">
+
+<div>
+成本
+<b>${stock.cost}</b>
+</div>
+
+<div>
+参考价
+<b>${stock.price}</b>
+</div>
+
+<div>
+浮动
+<b>${changeText}</b>
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
 
 }
 
 
-function showHelp() {
 
-  alert(
+/* =======================
+   截图
+======================= */
 
-    "每天收盘后的流程：\n\n" +
+function previewImage(event){
 
-    "1. 打开同花顺持仓页面\n" +
+const file =
+event.target.files[0];
 
-    "2. 截一张完整持仓图\n" +
+if(!file)return;
 
-    "3. 直接把截图发给 ChatGPT\n" +
+const img =
+document.getElementById("preview");
 
-    "4. 我会更新：\n" +
+img.src =
+URL.createObjectURL(file);
 
-    "• 持仓盈亏\n" +
+img.style.display =
+"block";
 
-    "• 股票强弱\n" +
+localStorage.setItem(
+"lastUpload",
+new Date().toLocaleString()
+);
 
-    "• 板块轮动\n" +
-
-    "• 行业动态\n" +
-
-    "• 机构资金异动\n" +
-
-    "• 次日重点观察"
-
-  );
+updateDate();
 
 }
 
 
+function updateDate(){
+
+const saved =
+localStorage.getItem("lastUpload");
+
+document
+.getElementById("dateText")
+.innerText =
+saved
+?
+"最近上传："+saved
+:
+"今天还没有上传持仓截图";
+
+}
+
+
+function showHelp(){
+
+alert(
+
+"每天收盘后的使用方法：\n\n"+
+
+"1. 打开同花顺持仓页面\n"+
+
+"2. 截一张完整持仓截图\n"+
+
+"3. 把截图直接发给 ChatGPT\n"+
+
+"4. 我会分析：\n"+
+
+"• 今日最强板块 Top5\n"+
+
+"• 资金异动\n"+
+
+"• 龙虎榜机构\n"+
+
+"• 短线候选 Top3～5\n"+
+
+"• 持仓风险\n"+
+
+"• 明日关注和放弃条件"
+
+);
+
+}
+
+
+
+/* 页面初始化 */
+
+renderSectors();
+renderShortStocks();
 renderStocks();
 updateDate();
 
