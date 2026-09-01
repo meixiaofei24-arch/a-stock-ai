@@ -1756,7 +1756,7 @@ document
 
 async function aiAnalyze() {
   try {
-    const res = await fetch(""https://a-stock-deepseek-api.meixiaofei24.workers.dev"", {
+    const res = await fetch("https://a-stock-deepseek-api.meixiaofei24.workers.dev"", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -1768,15 +1768,17 @@ async function aiAnalyze() {
 
     const data = await res.json();
 
-    if (data.success) {
-      console.log("AI分析结果：", data.result);
+if (!res.ok) {
+    throw new Error(data.error || "AI分析失败");
+}
 
-      const aiResult = document.getElementById("aiResult");
+console.log("AI分析结果：", data);
 
-      if (aiResult) {
-        aiResult.innerText = data.result;
-      }
-    }
+const aiResult = document.getElementById("aiResult");
+
+if (aiResult) {
+    aiResult.innerText = JSON.stringify(data, null, 2);
+}
 
   } catch (error) {
     console.error("AI连接失败：", error);
