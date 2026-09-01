@@ -1037,7 +1037,331 @@ action:
 
 ];
 
+];
 
+// ======== 我的持仓 AI 决策 ========
+
+const AI_CONFIG = {
+  stopLoss: 0.92,       // 默认止损参考：成本价下方8%
+  takeProfit: 1.15,     // 默认止盈参考：成本价上方15%
+  addPosition: 0.95     // 接近成本价95%以下，才考虑观察加仓
+};
+
+function analyzeHolding(h){
+
+  const change = ((h.price - h.cost) / h.cost) * 100;
+
+  let score = 70;
+  let action = "观察";
+  let risk = "中等";
+  let reason = "";
+
+  // 盈亏判断
+  if(change >= 8){
+    score += 10;
+  }else if(change >= 0){
+    score += 5;
+  }else if(change <= -8){
+    score -= 15;
+  }else{
+    score -= 5;
+  }
+
+  // 板块关键词判断
+  const sector = h.sector || "";
+
+  if(
+    sector.includes("人工智能") ||
+    sector.includes("半导体") ||
+    sector.includes("机器人") ||
+    sector.includes("电子")
+  ){
+    score += 5;
+  }
+
+  if(
+    sector.includes("资源") ||
+    sector.includes("有色")
+  ){
+    score -= 3;
+  }
+
+  // 风险
+  if(change <= -10){
+    risk = "较高";
+  }else if(change <= -5){
+    risk = "中高";
+  }else if(change >= 5){
+    risk = "较低";
+  }
+
+  // 决策
+  if(change <= -10){
+    action = "控制仓位";
+    reason = "跌幅较大，暂不建议盲目补仓，优先观察趋势是否止跌。";
+  }else if(change <= -5){
+    action = "谨慎持有";
+    reason = "目前处于回撤状态，建议控制仓位，等待趋势修复。";
+  }else if(change >= 10){
+    action = "分批止盈";
+    reason = "已经获得一定涨幅，可考虑分批锁定利润。";
+  }else if(change >= 3){
+    action = "继续持有";
+    reason = "趋势暂时正常，可以继续观察，但不要追高。";
+  }else{
+    action = "观察";
+    reason = "接近成本区域，等待方向进一步明确。";
+  }
+
+  score = Math.max(0, Math.min(100, score));
+
+  const stopLoss = h.cost * AI_CONFIG.stopLoss;
+  const takeProfit = h.cost * AI_CONFIG.takeProfit;
+
+  return {
+    change,
+    score,
+    action,
+    risk,
+    reason,
+    stopLoss,
+    takeProfit
+  };
+}
+
+
+function renderAIHoldings(){
+
+  // 防止重复创建
+  const old = document.getElementById("aiHoldingsPanel");
+  if(old) old.remove();
+
+  const panel = document.createElement("div");
+  panel.id = "aiHoldingsPanel";
+
+  let totalValue = 0;
+
+  holdings.forEach(h => {
+    totalValue += Number(h.value || 0);
+  });
+
+  let html = `
+    <div class="ai-panel-title">
+      🤖 我的持仓 AI 决策
+    </div>
+
+    <div class="ai-panel-subtitle">
+      根据持仓成本、现价、盈亏及所属板块进行综合判断
+    </div>
+  `;
+
+  holdings.forEach(h => {
+
+    const a = analyzeHolding(h);
+
+    const position =
+      totalValue > 0
+      ? ((Number(h.value || 0) / totalValue) * 100).toFixed(1)
+      : "0.0";
+
+    html += `
+      <div class="ai-stock-card">
+
+        <div class="ai-stock-head">
+          <div>
+            <strong>${h.name}</strong>
+            <span>${h.code}</span>
+          </div>
+
+          <div class="ai-score">
+            ⭐ ${a.score}
+          </div>
+        </div>
+
+        <div class="ai-stock-grid">
+
+          <div>
+            <small>当前价</small>
+            <b>${Number(h.price).toFixed(2)}</b>
+          </div>
+
+          <div>
+            <small>成本价</small>
+            <b>${Number(h.cost).toFixed(2)}</b>
+          </div>
+
+          <div>
+            <small>盈亏</small>
+            <b>${a.change.toFixed(2)}%</b>
+          </div>
+
+          <div>
+            <small>仓位</small>
+            <b>${position}%</b>
+          </div>
+
+        </div>
+
+        <div class="ai-action">
+          <span>AI建议</span>
+          <strong>${a.action}</strong>
+        </div>
+
+        <div class="ai-risk">
+          风险等级：${a.risk}
+        </div>
+
+        <div class="ai-price">
+          🛑 止损参考：${a.stopLoss.toFixed(2)}
+         　
+          🎯 止盈参考：${a.takeProfit.toFixed(2)}
+        </div>
+
+        <div class="ai-reason">
+          ${a.reason}
+        </div>
+
+      </div>
+    `;
+  });
+
+  panel.innerHTML = html;
+
+  // 插入到板块区域之前
+  const sectorFunction = document.querySelector("#sectors");
+
+  if(sectorFunction){
+    sectorFunction.parentNode.insertBefore(panel, sectorFunction);
+  }else{
+    document.body.appendChild(panel);
+  }
+}
+
+
+// ======== AI 持仓样式 ========
+
+const aiStyle = document.createElement("style");
+
+aiStyle.innerHTML = `
+#aiHoldingsPanel{
+  margin:18px;
+  padding:18px;
+  background:#f6f8fb;
+  border-radius:20px;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+}
+
+.ai-panel-title{
+  font-size:21px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.ai-panel-subtitle{
+  color:#8a8f98;
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+.ai-stock-card{
+  background:#fff;
+  border-radius:16px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+
+.ai-stock-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.ai-stock-head strong{
+  font-size:18px;
+}
+
+.ai-stock-head span{
+  color:#999;
+  font-size:12px;
+  margin-left:8px;
+}
+
+.ai-score{
+  font-size:16px;
+  font-weight:700;
+}
+
+.ai-stock-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.ai-stock-grid small{
+  display:block;
+  color:#999;
+  font-size:11px;
+  margin-bottom:4px;
+}
+
+.ai-stock-grid b{
+  font-size:14px;
+}
+
+.ai-action{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  background:#f3f7ff;
+  border-radius:10px;
+}
+
+.ai-action span{
+  color:#777;
+}
+
+.ai-action strong{
+  color:#1677ff;
+}
+
+.ai-risk{
+  margin-top:10px;
+  font-size:13px;
+  color:#666;
+}
+
+.ai-price{
+  margin-top:9px;
+  font-size:12px;
+  color:#666;
+}
+
+.ai-reason{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid #eee;
+  color:#555;
+  font-size:13px;
+  line-height:1.6;
+}
+`;
+
+document.head.appendChild(aiStyle);
+
+
+// ======== 启动 AI 持仓分析 ========
+
+renderAIHoldings();
+
+
+/* ========================
+   显示板块
+======================== */
+
+function renderSectors(){
 
 /* =========================
    显示板块
@@ -1270,18 +1594,6 @@ ${h.action}
    刷新AI
 ========================= */
 
-function refreshAI(){
-
-const scores =
-[76,78,80,82,79,81,84];
-
-
-const score =
-scores[
-Math.floor(
-Math.random()*scores.length
-)
-];
 
 
 document
