@@ -1762,8 +1762,9 @@ async function aiAnalyze() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        holdings: holdings
-      })
+  holdings: holdings,
+  question: document.querySelector("textarea")?.value || "请全面分析我的A股持仓"
+})
     });
 
     const data = await res.json();
