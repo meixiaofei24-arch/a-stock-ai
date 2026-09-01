@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>A股 AI 持仓智能体</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  background:#f4f6f8;
+  color:#17202a;
+  font-family:-apple-system,BlinkMacSystemFont,
+  "PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+
+.header{
+  background:linear-gradient(135deg,#0d1b34,#1c4b82);
+  color:#fff;
+  padding:24px 18px 20px;
+  border-radius:0 0 24px 24px;
+}
+
+.header h1{
+  margin:0;
+  font-size:25px;
+}
+
+.header p{
+  margin:8px 0 0;
+  color:#bfd0e5;
+  font-size:13px;
+}
+
+.container{
+  padding:14px;
+  max-width:760px;
+  margin:auto;
+}
+
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:17px;
+  margin-bottom:14px;
+  box-shadow:0 3px 14px rgba(0,0,0,.06);
+}
+
+.title{
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:14px;
+}
+
+/* 市场 */
+
+.market{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+}
+
+.box{
+  background:#f7f8fa;
+  border-radius:13px;
+  padding:12px 7px;
+  text-align:center;
+}
+
+.label{
+  color:#68727e;
+  font-size:12px;
+}
+
+.value{
+  font-size:18px;
+  font-weight:800;
+  margin-top:6px;
+}
+
+.red{
+  color:#e5484d;
+}
+
+.green{
+  color:#15945b;
+}
+
+.yellow{
+  color:#d58a00;
+}
+
+.blue{
+  color:#1769d1;
+}
+
+/* AI评分 */
+
+.score{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.score-circle{
+  width:78px;
+  height:78px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eaf5ee;
+  color:#15945b;
+  font-size:27px;
+  font-weight:900;
+}
+
+.score-info{
+  flex:1;
+}
+
+.score-info strong{
+  display:block;
+  font-size:18px;
+  margin-bottom:6px;
+}
+
+.score-info span{
+  color:#6b7480;
+  font-size:13px;
+  line-height:1.5;
+}
+
+.progress{
+  height:9px;
+  background:#edf0f2;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:12px;
+}
+
+.progress i{
+  display:block;
+  height:100%;
+  width:78%;
+  background:#1769d1;
+  border-radius:10px;
+}
+
+/* 板块 */
+
+.sector{
+  padding:12px 0;
+  border-bottom:1px solid #edf0f2;
+}
+
+.sector:last-child{
+  border-bottom:0;
+}
+
+.sector-top{
+  display:flex;
+  align-items:center;
+}
+
+.rank{
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  background:#edf2f7;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  margin-right:10px;
+}
+
+.sector-main{
+  flex:1;
+}
+
+.sector-main strong{
+  display:block;
+  font-size:15px;
+}
+
+.sector-main span{
+  display:block;
+  color:#8a929c;
+  font-size:12px;
+  margin-top:3px;
+}
+
+.change{
+  font-weight:800;
+}
+
+.mini{
+  font-size:12px;
+  color:#7a8490;
+  margin-top:8px;
+  padding-left:38px;
+}
+
+/* 股票 */
+
+.stock{
+  display:flex;
+  align-items:center;
+  padding:12px 0;
+  border-bottom:1px solid #edf0f2;
+}
+
+.stock:last-child{
+  border-bottom:0;
+}
+
+.stock-main{
+  flex:1;
+}
+
+.stock-main strong{
+  font-size:15px;
+}
+
+.stock-main span{
+  display:block;
+  color:#8a929c;
+  font-size:12px;
+  margin-top:4px;
+}
+
+.tag{
+  padding:5px 8px;
+  border-radius:8px;
+  background:#eef5ff;
+  color:#1769d1;
+  font-size:12px;
+  font-weight:800;
+}
+
+/* 持仓 */
+
+.hold{
+  padding:12px 0;
+  border-bottom:1px solid #edf0f2;
+}
+
+.hold:last-child{
+  border-bottom:0;
+}
+
+.hold-head{
+  display:flex;
+  align-items:center;
+}
+
+.hold-name{
+  flex:1;
+}
+
+.hold-name strong{
+  font-size:15px;
+}
+
+.hold-name small{
+  display:block;
+  color:#8a929c;
+  margin-top:4px;
+}
+
+.hold-num{
+  text-align:right;
+}
+
+.hold-num strong{
+  display:block;
+}
+
+.hold-num small{
+  display:block;
+  color:#8a929c;
+  margin-top:3px;
+}
+
+.action{
+  margin-top:8px;
+  font-size:12px;
+  line-height:1.55;
+  padding:8px 10px;
+  border-radius:10px;
+  background:#f7f8fa;
+}
+
+/* 资金 */
+
+.money{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.money-box{
+  background:#f7f8fa;
+  border-radius:13px;
+  padding:12px;
+}
+
+.money-box span{
+  display:block;
+  color:#737d88;
+  font-size:12px;
+}
+
+.money-box strong{
+  display:block;
+  margin-top:5px;
+  font-size:18px;
+}
+
+.position{
+  margin-top:12px;
+  height:11px;
+  border-radius:10px;
+  background:#edf0f2;
+  overflow:hidden;
+}
+
+.position div{
+  height:100%;
+  background:#315f9f;
+  border-radius:10px;
+}
+
+/* AI */
+
+.agent{
+  background:#f4f8ff;
+  border:1px solid #dce9fb;
+  border-radius:14px;
+  padding:13px;
+  line-height:1.7;
+  font-size:13px;
+}
+
+.agent b{
+  color:#1769d1;
+}
+
+/* 输入 */
+
+textarea,
+input{
+  width:100%;
+  border:1px solid #dfe4ea;
+  border-radius:11px;
+  padding:10px;
+  font:inherit;
+  background:#fff;
+}
+
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+button{
+  width:100%;
+  border:0;
+  border-radius:14px;
+  background:#1769d1;
+  color:white;
+  font-size:16px;
+  font-weight:800;
+  padding:14px;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+button.secondary{
+  background:#eef4fb;
+  color:#1769d1;
+}
+
+.note{
+  background:#fff7e8;
+  color:#76551b;
+  border-radius:13px;
+  padding:12px;
+  line-height:1.65;
+  font-size:12px;
+}
+
+.time{
+  text-align:center;
+  color:#8a929c;
+  font-size:11px;
+  margin-top:10px;
+}
+
+.footer{
+  text-align:center;
+  color:#9299a3;
+  font-size:11px;
+  padding:5px 0 25px;
+}
+
+@media(max-width:420px){
+
+  .market{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .money{
+    grid-template-columns:1fr 1fr;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+<h1>📊 A股 AI 持仓智能体</h1>
+
+<p>
+市场判断 · 板块轮动 · 个股观察 · 持仓管理
+</p>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- 市场环境 -->
+
+<section class="card">
+
+<div class="title">
+🌐 市场环境
+</div>
+
+<div class="market">
+
+<div class="box">
+
+<div class="label">
+大盘趋势
+</div>
+
+<div
+class="value red"
+id="trend">
+震荡
+</div>
+
+</div>
+
+
+<div class="box">
+
+<div class="label">
+市场情绪
+</div>
+
+<div
+class="value yellow"
+id="emotion">
+偏强
+</div>
+
+</div>
+
+
+<div class="box">
+
+<div class="label">
+风险等级
+</div>
+
+<div
+class="value yellow"
+id="risk">
+中等
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- AI评分 -->
+
+<section class="card">
+
+<div class="title">
+🤖 AI 综合评分
+</div>
+
+<div class="score">
+
+<div
+class="score-circle"
+id="score">
+78
+</div>
+
+
+<div class="score-info">
+
+<strong id="marketStatus">
+震荡偏强
+</strong>
+
+<span>
+趋势 30% · 成交量 20% · 情绪 20% · 板块强度 30%
+</span>
+
+</div>
+
+</div>
+
+
+<div class="progress">
+
+<i id="scoreBar"></i>
+
+</div>
+
+</section>
+
+
+
+<!-- 板块 -->
+
+<section class="card">
+
+<div class="title">
+🔥 板块轮动 + AI观察
+</div>
+
+<div id="sectors"></div>
+
+</section>
+
+
+
+<!-- 个股 -->
+
+<section class="card">
+
+<div class="title">
+🎯 每个板块股票观察池
+</div>
+
+<div id="stocks"></div>
+
+</section>
+
+
+
+<!-- 持仓 -->
+
+<section class="card">
+
+<div class="title">
+💼 我的持仓
+</div>
+
+<div id="holdings"></div>
+
+</section>
+
+
+
+<!-- 仓位 -->
+
+<section class="card">
+
+<div class="title">
+💰 仓位管理
+</div>
+
+
+<div class="money">
+
+
+<div class="money-box">
+
+<span>
+总资产
+</span>
+
+<strong>
+¥70,281.84
+</strong>
+
+</div>
+
+
+<div class="money-box">
+
+<span>
+股票市值
+</span>
+
+<strong>
+¥69,362.00
+</strong>
+
+</div>
+
+
+<div class="money-box">
+
+<span>
+可用现金
+</span>
+
+<strong>
+¥919.84
+</strong>
+
+</div>
+
+
+<div class="money-box">
+
+<span>
+当前仓位
+</span>
+
+<strong>
+98.7%
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="position">
+
+<div style="width:98.7%"></div>
+
+</div>
+
+
+<div
+class="note"
+style="margin-top:12px">
+
+当前仓位非常高。
+
+智能体的核心任务不是让你继续追涨，
+而是先判断哪些持仓值得继续拿、
+哪些应该降低集中度，
+再决定下一笔资金。
+
+</div>
+
+</section>
+
+
+
+<!-- AI决策 -->
+
+<section class="card">
+
+<div class="title">
+🧠 AI 持仓决策
+</div>
+
+
+<div
+class="agent"
+id="agentText">
+
+当前组合集中度较高，
+优先做“持仓优化”而不是盲目加仓。
+
+强趋势方向保留核心仓，
+弱趋势或与主线相关性较低的品种逐步降低仓位。
+
+单一股票建议设置上限，
+避免组合风险集中。
+
+</div>
+
+</section>
+
+
+
+<!-- AI问题 -->
+
+<section class="card">
+
+<div class="title">
+✍️ 自定义智能体问题
+</div>
+
+
+<textarea
+id="question"
+placeholder="例如：我这6只股票明天应该怎么调仓？">
+</textarea>
+
+
+<button onclick="askAgent()">
+
+让 AI 智能体分析
+
+</button>
+
+
+<div
+class="time"
+id="answer">
+</div>
+
+</section>
+
+
+
+<!-- 更新 -->
+
+<section class="card">
+
+<button onclick="refreshAI()">
+
+🔄 更新策略评分
+
+</button>
+
+
+<button
+class="secondary"
+onclick="resetDemo()">
+
+恢复默认数据
+
+</button>
+
+
+<div
+class="time"
+id="updateTime">
+
+上次更新：页面加载时
+
+</div>
+
+</section>
+
+
+<div class="footer">
+
+A股 AI 持仓智能体 V3.0
+
+<br>
+
+当前为前端策略演示版；
+
+真实行情、新闻、资金流和大模型 API
+需要后端数据接口。
+
+</div>
+
+
+</main>
+
+
+
+<script>
+
+
+/* =========================
+   板块数据
+========================= */
+
+const sectors = [
+
+{
+
+name:"人工智能",
+
+desc:"算力 / AI应用",
+
+change:"+3.82%",
+
+score:91,
+
+stocks:[
+
+["工业富联","601138","核心观察"],
+
+["浪潮信息","000977","强势观察"],
+
+["中际旭创","300308","高弹性观察"]
+
+]
+
+},
+
+
+{
+
+name:"半导体",
+
+desc:"芯片 / 国产替代",
+
+change:"+2.91%",
+
+score:87,
+
+stocks:[
+
+["北方华创","002371","核心观察"],
+
+["中芯国际","688981","核心观察"],
+
+["寒武纪","688256","高弹性观察"]
+
+]
+
+},
+
+
+{
+
+name:"机器人",
+
+desc:"人形机器人 / 自动化",
+
+change:"+2.35%",
+
+score:84,
+
+stocks:[
+
+["汇川技术","300124","核心观察"],
+
+["三花智控","002050","核心观察"],
+
+["绿的谐波","688017","高弹性观察"]
+
+]
+
+},
+
+
+{
+
+name:"低空经济",
+
+desc:"无人机 / eVTOL",
+
+change:"+1.84%",
+
+score:79,
+
+stocks:[
+
+["中信海直","000099","观察"],
+
+["万丰奥威","002085","观察"],
+
+["莱斯信息","688631","观察"]
+
+]
+
+},
+
+
+{
+
+name:"新能源",
+
+desc:"储能 / 光伏",
+
+change:"-0.46%",
+
+score:68,
+
+stocks:[
+
+["宁德时代","300750","低吸观察"],
+
+["阳光电源","300274","观察"],
+
+["亿纬锂能","300014","观察"]
+
+]
+
+}
+
+];
+
+
+
+/* =========================
+   我的持仓
+========================= */
+
+const holdings = [
+
+{
+
+name:"圣泉集团",
+
+code:"605589",
+
+value:8144,
+
+cost:40.65,
+
+price:40.72,
+
+sector:"新材料",
+
+action:
+"小幅盈利；先持有，若跌破关键趋势再考虑减仓。"
+
+},
+
+
+{
+
+name:"联合精密",
+
+code:"001268",
+
+value:10368,
+
+cost:26.012,
+
+price:25.92,
+
+sector:"精密制造",
+
+action:
+"小幅回撤；暂不追补，等待量价重新转强。"
+
+},
+
+
+{
+
+name:"深科技",
+
+code:"000021",
+
+value:7548,
+
+cost:37.705,
+
+price:37.74,
+
+sector:"半导体/存储",
+
+action:
+"接近成本；属于科技主线，可继续观察趋势，但控制仓位。"
+
+},
+
+
+{
+
+name:"宏桥控股",
+
+code:"01378",
+
+value:12698,
+
+cost:18.421,
+
+price:18.14,
+
+sector:"资源/有色",
+
+action:
+"当前组合中与AI主线相关性较低，优先评估是否降低集中度。"
+
+},
+
+
+{
+
+name:"晶华新材",
+
+code:"603683",
+
+value:15264,
+
+cost:17.23,
+
+price:16.96,
+
+sector:"新材料",
+
+action:
+"回撤较明显；不建议因为下跌而机械补仓，先看趋势修复。"
+
+},
+
+
+{
+
+name:"生益科技",
+
+code:"600183",
+
+value:15340,
+
+cost:155.932,
+
+price:153.40,
+
+sector:"电子材料/PCB",
+
+action:
+"属于科技材料方向，适合做组合核心观察，但仍需控制单票权重。"
+
+}
+
+];
+
+
+
+/* =========================
+   显示板块
+========================= */
+
+function renderSectors(){
+
+const el =
+document.getElementById("sectors");
+
+
+el.innerHTML = sectors.map(
+
+(s,i)=>`
+
+<div class="sector">
+
+<div class="sector-top">
+
+<div class="rank">
+${i+1}
+</div>
+
+
+<div class="sector-main">
+
+<strong>
+${s.name}
+</strong>
+
+<span>
+${s.desc} · AI评分 ${s.score}
+</span>
+
+</div>
+
+
+<div
+class="change
+${s.change.startsWith("+")?"red":"green"}">
+
+${s.change}
+
+</div>
+
+</div>
+
+
+<div class="mini">
+
+智能体策略：
+
+${s.score>=85
+?"核心观察"
+:"观察/等待确认"}
+
+· 推荐观察：
+
+${s.stocks
+.map(x=>x[0])
+.join("、")}
+
+</div>
+
+</div>
+
+`
+
+).join("");
+
+}
+
+
+
+/* =========================
+   股票
+========================= */
+
+function renderStocks(){
+
+const el =
+document.getElementById("stocks");
+
+
+el.innerHTML = sectors.map(
+
+s=>`
+
+<div
+style="margin-bottom:8px">
+
+<strong>
+${s.name}
+</strong>
+
+</div>
+
+
+${s.stocks.map(
+
+x=>`
+
+<div class="stock">
+
+<div class="stock-main">
+
+<strong>
+${x[0]}
+</strong>
+
+<span>
+${x[1]} · ${s.name}
+</span>
+
+</div>
+
+
+<div class="tag">
+${x[2]}
+</div>
+
+</div>
+
+`
+
+).join("")}
+
+`
+
+).join("");
+
+}
+
+
+
+/* =========================
+   持仓
+========================= */
+
+function renderHoldings(){
+
+const el =
+document.getElementById("holdings");
+
+
+const total = 70362;
+
+
+el.innerHTML =
+holdings.map(h=>{
+
+const pct =
+(h.value/total*100).toFixed(1);
+
+
+const pnl =
+((h.price-h.cost)/h.cost*100)
+.toFixed(2);
+
+
+const cls =
+Number(pnl)>=0
+?"red"
+:"green";
+
+
+return `
+
+<div class="hold">
+
+<div class="hold-head">
+
+
+<div class="hold-name">
+
+<strong>
+${h.name}
+</strong>
+
+<small>
+${h.code} · ${h.sector}
+</small>
+
+</div>
+
+
+<div class="hold-num">
+
+<strong>
+¥${h.value.toLocaleString()}
+</strong>
+
+<small>
+
+${pct}%
+
+·
+
+<span class="${cls}">
+${pnl}%
+</span>
+
+</small>
+
+</div>
+
+
+</div>
+
+
+<div class="action">
+
+AI建议：
+
+${h.action}
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+
+/* =========================
+   刷新AI
+========================= */
+
+function refreshAI(){
+
+const scores =
+[76,78,80,82,79,81,84];
+
+
+const score =
+scores[
+Math.floor(
+Math.random()*scores.length
+)
+];
+
+
+document
+.getElementById("score")
+.innerText=score;
+
+
+document
+.getElementById("scoreBar")
+.style.width=score+"%";
+
+
+document
+.getElementById("marketStatus")
+.innerText=
+
+score>=82
+
+?"偏强，可择强配置"
+
+:
+
+score>=78
+
+?"震荡偏强，控制追高"
+
+:
+
+"震荡，控制仓位";
+
+
+document
+.getElementById("risk")
+.innerText=
+
+score>=82
+?"中等"
+:
+score>=78
+?"中等"
+:
+"偏高";
+
+
+document
+.getElementById("emotion")
+.innerText=
+
+score>=82
+?"偏强"
+:
+"震荡";
+
+
+const now =
+new Date();
+
+
+document
+.getElementById("updateTime")
+.innerText=
+
+"上次更新："
++
+now.toLocaleTimeString(
+"zh-CN",
+{
+hour12:false
+}
+);
+
+}
+
+
+
+/* =========================
+   AI问题
+========================= */
+
+function askAgent(){
+
+const q =
+document
+.getElementById("question")
+.value
+.trim();
+
+
+if(!q){
+
+document
+.getElementById("answer")
+.innerText=
+"请先输入你的问题。";
+
+return;
+
+}
+
+
+document
+.getElementById("answer")
+.innerText=
+
+"演示分析：你的当前组合股票市值约 ¥69,362，仓位约 98.7%。建议优先进行结构优化，不建议因为短线波动一次性大幅调仓。真正接入 AI 后，这里可以结合实时行情、新闻、资金流和你的成本价生成具体方案。";
+
+}
+
+
+
+/* =========================
+   恢复默认
+========================= */
+
+function resetDemo(){
+
+document
+.getElementById("score")
+.innerText="78";
+
+
+document
+.getElementById("scoreBar")
+.style.width="78%";
+
+
+document
+.getElementById("marketStatus")
+.innerText=
+"震荡偏强";
+
+
+document
+.getElementById("risk")
+.innerText=
+"中等";
+
+
+document
+.getElementById("emotion")
+.innerText=
+"偏强";
+
+
+document
+.getElementById("updateTime")
+.innerText=
+"上次更新：页面加载时";
+
+}
+
+
+
+/* =========================
+   初始化
+========================= */
+
+renderSectors();
+
+renderStocks();
+
+renderHoldings();
+
+</script>
+
+</body>
+</html>
