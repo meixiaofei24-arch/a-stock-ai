@@ -1,54 +1,52 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A股 AI 智能投研 V4</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A股持仓助手 V2</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background: #f5f7fb;
-      color: #172033;
+      background: #f4f6f9;
+      color: #182033;
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
                    "Microsoft YaHei", Arial, sans-serif;
     }
 
     .app {
       max-width: 760px;
-      margin: 0 auto;
+      margin: auto;
       padding: 16px 14px 50px;
     }
 
     .header {
-      padding: 10px 2px 16px;
+      margin: 8px 2px 18px;
     }
 
     .title {
-      font-size: 26px;
+      font-size: 27px;
       font-weight: 800;
-      margin-bottom: 6px;
     }
 
-    .subtitle {
-      color: #7a8498;
+    .sub {
+      margin-top: 5px;
+      color: #8a93a3;
       font-size: 14px;
     }
 
     .card {
-      background: #ffffff;
+      background: white;
       border-radius: 18px;
       padding: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 4px 18px rgba(30, 50, 90, 0.06);
+      box-shadow: 0 5px 18px rgba(30,40,70,.05);
     }
 
     .card-title {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 750;
       margin-bottom: 14px;
     }
@@ -56,745 +54,427 @@
     .overview {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 9px;
     }
 
     .metric {
-      background: #f6f8fc;
-      border-radius: 14px;
-      padding: 12px 8px;
+      background: #f5f7fb;
+      padding: 13px 6px;
       text-align: center;
+      border-radius: 13px;
     }
 
-    .metric-label {
+    .metric span {
+      display: block;
+      color: #929aaa;
       font-size: 12px;
-      color: #8a94a6;
       margin-bottom: 6px;
     }
 
-    .metric-value {
+    .metric b {
       font-size: 16px;
-      font-weight: 750;
-    }
-
-    .warning {
-      background: #fff8e9;
-      border-radius: 14px;
-      padding: 13px;
-      line-height: 1.65;
-      font-size: 14px;
     }
 
     .stock {
-      border: 1px solid #edf0f5;
-      border-radius: 15px;
-      padding: 13px;
-      margin-bottom: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid #edf0f3;
     }
 
     .stock:last-child {
-      margin-bottom: 0;
+      border-bottom: 0;
     }
 
-    .stock-top {
+    .top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      align-items: center;
     }
 
-    .stock-name {
-      font-size: 16px;
+    .name {
       font-weight: 750;
+      font-size: 17px;
     }
 
-    .stock-code {
+    .code {
+      color: #a0a6b2;
       font-size: 12px;
-      color: #929aab;
       margin-left: 5px;
     }
 
     .tag {
-      font-size: 12px;
       padding: 5px 9px;
-      border-radius: 999px;
-      white-space: nowrap;
+      border-radius: 20px;
+      font-size: 12px;
     }
 
     .green {
+      color: #17834a;
       background: #e9f8ef;
-      color: #16834a;
     }
 
     .yellow {
-      background: #fff7df;
-      color: #9b6a00;
+      color: #9d7000;
+      background: #fff5d7;
     }
 
     .orange {
-      background: #fff0e7;
-      color: #c55b17;
+      color: #c45c16;
+      background: #fff0e5;
     }
 
     .red {
-      background: #ffecec;
-      color: #cf3030;
+      color: #d43a3a;
+      background: #ffeaea;
     }
 
-    .stock-info {
+    .info {
+      margin-top: 10px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 11px;
       font-size: 13px;
-      color: #6f788a;
+      color: #8a92a2;
     }
 
-    .stock-info b {
+    .info b {
       display: block;
-      color: #273047;
-      font-size: 14px;
-      margin-top: 3px;
+      margin-top: 4px;
+      color: #283148;
+      font-size: 15px;
     }
 
-    button {
+    .tip {
+      background: #fff8e9;
+      border-radius: 14px;
+      padding: 14px;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .upload-box {
+      border: 2px dashed #dbe1ea;
+      border-radius: 15px;
+      padding: 22px 12px;
+      text-align: center;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .button {
+      display: block;
       width: 100%;
       border: 0;
       border-radius: 14px;
-      min-height: 48px;
+      padding: 15px;
+      margin-top: 12px;
+      background: #2469df;
+      color: white;
       font-size: 16px;
       font-weight: 700;
+      text-align: center;
       cursor: pointer;
     }
 
-    .primary-btn {
-      background: #1769e8;
-      color: #ffffff;
+    .secondary {
+      background: #edf3ff;
+      color: #2469df;
     }
 
-    .primary-btn:disabled {
-      opacity: .6;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      resize: vertical;
-      border: 1px solid #dde2eb;
-      border-radius: 14px;
-      padding: 13px;
-      font-size: 16px;
-      outline: none;
-      font-family: inherit;
-      margin-bottom: 12px;
-    }
-
-    textarea:focus {
-      border-color: #1769e8;
-    }
-
-    .quick {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .quick button {
-      width: auto;
-      min-height: auto;
-      padding: 8px 11px;
-      background: #f0f4fb;
-      color: #4c5870;
-      font-size: 13px;
-      border-radius: 999px;
-    }
-
-    .ai-box {
+    #preview {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 12px;
       display: none;
-      background: #f6f9ff;
-      border-radius: 15px;
-      padding: 15px;
-      margin-top: 14px;
-      line-height: 1.75;
-      white-space: pre-wrap;
-      font-size: 14px;
-      overflow-wrap: anywhere;
     }
 
-    .thinking {
-      color: #1769e8;
-      font-weight: 650;
-    }
-
-    .error {
-      color: #cf3030;
-    }
-
-    .small {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #939bab;
+    .date {
+      color: #9299a8;
+      font-size: 13px;
       text-align: center;
-      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    .footer {
+      color: #9ca3af;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.7;
+      margin: 20px 8px;
     }
   </style>
 </head>
 
 <body>
+
 <div class="app">
 
   <div class="header">
-    <div class="title">🧠 AI 智能投研 V4</div>
-    <div class="subtitle">持仓分析 · 风险判断 · AI问答</div>
+    <div class="title">📊 A股持仓助手 V2</div>
+    <div class="sub">简单持仓 · 风险观察 · 每日复盘</div>
   </div>
 
+
   <div class="card">
-    <div class="card-title">📊 我的账户</div>
+    <div class="card-title">💰 账户概览</div>
 
     <div class="overview">
       <div class="metric">
-        <div class="metric-label">持仓数量</div>
-        <div class="metric-value" id="stockCount">6只</div>
+        <span>持仓数量</span>
+        <b>6只</b>
       </div>
 
       <div class="metric">
-        <div class="metric-label">股票仓位</div>
-        <div class="metric-value">98.7%</div>
+        <span>当前仓位</span>
+        <b>偏高</b>
       </div>
 
       <div class="metric">
-        <div class="metric-label">风险等级</div>
-        <div class="metric-value">偏高</div>
+        <span>风险状态</span>
+        <b>需控制</b>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">⚠️ AI 风险提示</div>
-
-    <div class="warning">
-      当前组合仓位较高，AI分析应优先关注：
-      强弱排序、单股风险、仓位集中度以及需要优先处理的弱势持仓。
-      AI结果仅用于辅助分析，不代替最终投资决策。
-    </div>
-  </div>
 
   <div class="card">
     <div class="card-title">💼 我的持仓</div>
-    <div id="holdingsList"></div>
 
-    <button
-      class="primary-btn"
-      id="analyzeAllBtn"
-      onclick="analyzeAll()"
-    >
-      🧠 一键分析全部持仓
-    </button>
-
-    <div id="allResult" class="ai-box"></div>
+    <div id="stocks"></div>
   </div>
+
 
   <div class="card">
-    <div class="card-title">💬 问 AI 智能体</div>
+    <div class="card-title">🧠 今日持仓思路</div>
 
-    <div class="quick">
-      <button onclick="setQuestion('我的持仓里哪只风险最大？')">
-        哪只风险最大
-      </button>
+    <div class="tip">
+      当前组合先以控制风险为主。<br><br>
 
-      <button onclick="setQuestion('我的持仓应该优先减哪只？')">
-        优先减哪只
-      </button>
+      🟢 强势股票优先保留。<br>
+      🟡 震荡股票继续观察。<br>
+      🟠 弱势股票注意反弹处理机会。<br>
+      🔴 明显弱势股票重点控制风险。<br><br>
 
-      <button onclick="setQuestion('分析一下生益科技后面的风险和机会')">
-        生益科技
-      </button>
-
-      <button onclick="setQuestion('无人机和低空经济板块现在怎么看？')">
-        无人机板块
-      </button>
+      不建议在整体仓位较高时连续补仓。
     </div>
-
-    <textarea
-      id="question"
-      placeholder="例如：生益科技现在怎么办？"
-    ></textarea>
-
-    <button
-      class="primary-btn"
-      id="askBtn"
-      onclick="askAI()"
-    >
-      ✨ 让 AI 分析
-    </button>
-
-    <div id="answer" class="ai-box"></div>
   </div>
 
-  <div class="small">
-    AI分析基于你提交给智能体的持仓信息。
-    未接入实时行情的数据，不会自动视为最新价格。
+
+  <div class="card">
+    <div class="card-title">📷 上传同花顺持仓截图</div>
+
+    <div class="upload-box">
+
+      <div>
+        每天收盘后，把同花顺持仓页面截图上传到这里保存。
+      </div>
+
+      <label class="button" for="fileInput">
+        选择持仓截图
+      </label>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept="image/*"
+        onchange="previewImage(event)"
+      >
+
+      <img id="preview">
+
+    </div>
+
+    <button class="button secondary" onclick="showHelp()">
+      🤖 怎么让我分析今天的持仓？
+    </button>
+
+    <div class="date" id="dateText"></div>
+  </div>
+
+
+  <div class="footer">
+    V2 简洁版<br>
+    当前页面用于持仓记录和辅助复盘。<br>
+    真正的每日分析请把同花顺最新持仓截图发给 ChatGPT。
   </div>
 
 </div>
 
+
 <script>
 
-  const API_URL =
-    "https://a-stock-deepseek-api.meixiaofei24.workers.dev";
+const holdings = [
+
+  {
+    name: "圣泉集团",
+    code: "605589",
+    cost: 40.65,
+    price: 38.64,
+    tag: "重点观察",
+    level: "orange"
+  },
+
+  {
+    name: "联合精密",
+    code: "001268",
+    cost: 26.012,
+    price: 26.37,
+    tag: "持有观察",
+    level: "green"
+  },
+
+  {
+    name: "深科技",
+    code: "000021",
+    cost: 37.705,
+    price: 36.54,
+    tag: "观察",
+    level: "yellow"
+  },
+
+  {
+    name: "宏桥控股",
+    code: "01378.HK",
+    cost: 18.421,
+    price: 18.71,
+    tag: "偏强",
+    level: "green"
+  },
+
+  {
+    name: "晶华新材",
+    code: "603683",
+    cost: 17.23,
+    price: 17.36,
+    tag: "持有",
+    level: "green"
+  },
+
+  {
+    name: "生益科技",
+    code: "600183",
+    cost: 153.932,
+    price: 144.30,
+    tag: "重点防守",
+    level: "red"
+  }
+
+];
 
 
-  // ===== 你的持仓 =====
-  const holdings = [
-    {
-      name: "圣泉集团",
-      code: "605589",
-      shares: 200,
-      cost: 40.65,
-      price: 38.64,
-      status: "重点观察",
-      level: "orange"
-    },
-    {
-      name: "联合精密",
-      code: "001268",
-      shares: 400,
-      cost: 26.012,
-      price: 26.37,
-      status: "持有观察",
-      level: "green"
-    },
-    {
-      name: "深科技",
-      code: "000021",
-      shares: 200,
-      cost: 37.705,
-      price: 36.54,
-      status: "观察",
-      level: "yellow"
-    },
-    {
-      name: "宏桥控股",
-      code: "01378.HK",
-      shares: 700,
-      cost: 18.421,
-      price: 18.71,
-      status: "偏强",
-      level: "green"
-    },
-    {
-      name: "晶华新材",
-      code: "603683",
-      shares: 900,
-      cost: 17.23,
-      price: 17.36,
-      status: "持有",
-      level: "green"
-    },
-    {
-      name: "生益科技",
-      code: "600183",
-      shares: 100,
-      cost: 153.932,
-      price: 144.30,
-      status: "重点防守",
-      level: "red"
-    }
-  ];
+function renderStocks() {
 
+  const box = document.getElementById("stocks");
 
-  // ===== 页面加载持仓 =====
-  function renderHoldings() {
+  box.innerHTML = holdings.map(stock => {
 
-    const box = document.getElementById("holdingsList");
+    const change =
+      ((stock.price - stock.cost) / stock.cost) * 100;
 
-    box.innerHTML = holdings.map(stock => {
+    const changeText =
+      (change >= 0 ? "+" : "") +
+      change.toFixed(2) +
+      "%";
 
-      const profit =
-        ((stock.price - stock.cost) / stock.cost) * 100;
+    return `
 
-      const profitText =
-        (profit >= 0 ? "+" : "") + profit.toFixed(2) + "%";
+      <div class="stock">
 
-      return `
-        <div class="stock">
+        <div class="top">
 
-          <div class="stock-top">
-
-            <div>
-              <span class="stock-name">
-                ${stock.name}
-              </span>
-
-              <span class="stock-code">
-                ${stock.code}
-              </span>
-            </div>
-
-            <span class="tag ${stock.level}">
-              ${stock.status}
+          <div>
+            <span class="name">
+              ${stock.name}
             </span>
 
+            <span class="code">
+              ${stock.code}
+            </span>
           </div>
 
-          <div class="stock-info">
+          <span class="tag ${stock.level}">
+            ${stock.tag}
+          </span>
 
-            <div>
-              成本
-              <b>${stock.cost}</b>
-            </div>
+        </div>
 
-            <div>
-              参考价
-              <b>${stock.price}</b>
-            </div>
 
-            <div>
-              浮动
-              <b>${profitText}</b>
-            </div>
+        <div class="info">
 
+          <div>
+            成本
+            <b>${stock.cost}</b>
+          </div>
+
+          <div>
+            参考价
+            <b>${stock.price}</b>
+          </div>
+
+          <div>
+            浮动
+            <b>${changeText}</b>
           </div>
 
         </div>
-      `;
-    }).join("");
-  }
 
+      </div>
 
-  // ===== 快捷问题 =====
-  function setQuestion(text) {
+    `;
 
-    document.getElementById("question").value = text;
+  }).join("");
 
-    document.getElementById("question").focus();
-  }
+}
 
 
-  // ===== 调用AI =====
-  async function callAI(question) {
+function previewImage(event) {
 
-    const response = await fetch(API_URL, {
+  const file = event.target.files[0];
 
-      method: "POST",
+  if (!file) return;
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+  const img = document.getElementById("preview");
 
-      body: JSON.stringify({
-        holdings: holdings,
-        question: question
-      })
+  img.src = URL.createObjectURL(file);
 
-    });
+  img.style.display = "block";
 
+  localStorage.setItem(
+    "lastUpload",
+    new Date().toLocaleString()
+  );
 
-    let data;
+  updateDate();
+}
 
-    try {
-      data = await response.json();
-    } catch (e) {
-      throw new Error("AI服务器返回格式异常");
-    }
 
+function updateDate() {
 
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        data.message ||
-        "AI分析失败"
-      );
-    }
+  const saved =
+    localStorage.getItem("lastUpload");
 
-    return data;
-  }
+  document.getElementById("dateText").innerText =
+    saved
+    ? "最近上传：" + saved
+    : "今天还没有上传持仓截图";
+}
 
 
-  // ===== 把AI JSON变成可读文字 =====
-  function formatAI(data) {
+function showHelp() {
 
-    if (typeof data === "string") {
-      return data;
-    }
+  alert(
+    "每天收盘后：\n\n" +
+    "1. 打开同花顺持仓页面\n" +
+    "2. 截图\n" +
+    "3. 直接把截图发给 ChatGPT\n" +
+    "4. 我会分析持仓盈亏、强弱、风险和第二天重点观察内容"
+  );
 
+}
 
-    let text = "";
 
-
-    if (data.answer) {
-      text += data.answer + "\n\n";
-    }
-
-
-    if (data.market) {
-
-      text += "📊 市场判断\n";
-
-      if (typeof data.market === "string") {
-        text += data.market;
-      } else {
-
-        if (data.market.status) {
-          text += "状态：" + data.market.status + "\n";
-        }
-
-        if (data.market.score !== undefined) {
-          text += "评分：" + data.market.score + "\n";
-        }
-
-        if (data.market.advice) {
-          text += data.market.advice + "\n";
-        }
-
-      }
-
-      text += "\n";
-    }
-
-
-    if (data.portfolio) {
-
-      text += "💼 持仓判断\n";
-
-      if (typeof data.portfolio === "string") {
-
-        text += data.portfolio;
-
-      } else {
-
-        if (data.portfolio.summary) {
-          text += data.portfolio.summary + "\n";
-        }
-
-        if (data.portfolio.risk) {
-          text += "风险：" + data.portfolio.risk + "\n";
-        }
-
-        if (data.portfolio.advice) {
-          text += data.portfolio.advice + "\n";
-        }
-
-      }
-
-      text += "\n";
-    }
-
-
-    if (Array.isArray(data.stocks)) {
-
-      text += "🔍 个股分析\n\n";
-
-      data.stocks.forEach((stock, index) => {
-
-        text +=
-          `${index + 1}. ${stock.name || stock.code || "股票"}\n`;
-
-        if (stock.status) {
-          text += `状态：${stock.status}\n`;
-        }
-
-        if (stock.risk) {
-          text += `风险：${stock.risk}\n`;
-        }
-
-        if (stock.advice) {
-          text += `建议：${stock.advice}\n`;
-        }
-
-        if (stock.reason) {
-          text += `原因：${stock.reason}\n`;
-        }
-
-        text += "\n";
-      });
-    }
-
-
-    if (Array.isArray(data.adjustments)) {
-
-      text += "🎯 AI操作思路\n\n";
-
-      data.adjustments.forEach((item, index) => {
-
-        if (typeof item === "string") {
-          text += `${index + 1}. ${item}\n`;
-        } else {
-
-          text +=
-            `${index + 1}. ${
-              item.name ||
-              item.stock ||
-              ""
-            } `;
-
-          text +=
-            item.advice ||
-            item.action ||
-            JSON.stringify(item);
-
-          text += "\n";
-        }
-
-      });
-
-      text += "\n";
-    }
-
-
-    if (!text.trim()) {
-      text = JSON.stringify(data, null, 2);
-    }
-
-
-    return text.trim();
-  }
-
-
-  // ===== 自定义问AI =====
-  async function askAI() {
-
-    const input =
-      document.getElementById("question");
-
-    const answer =
-      document.getElementById("answer");
-
-    const btn =
-      document.getElementById("askBtn");
-
-
-    const question = input.value.trim();
-
-
-    if (!question) {
-
-      answer.style.display = "block";
-
-      answer.innerHTML =
-        "先输入你想问的问题。";
-
-      return;
-    }
-
-
-    answer.style.display = "block";
-
-    answer.className =
-      "ai-box thinking";
-
-    answer.innerText =
-      "🧠 AI正在分析，请稍等...";
-
-    btn.disabled = true;
-
-    btn.innerText =
-      "AI思考中...";
-
-
-    try {
-
-      const data =
-        await callAI(question);
-
-      answer.className =
-        "ai-box";
-
-      answer.innerText =
-        formatAI(data);
-
-
-    } catch (error) {
-
-      answer.className =
-        "ai-box error";
-
-      answer.innerText =
-        "❌ " + error.message;
-
-    } finally {
-
-      btn.disabled = false;
-
-      btn.innerText =
-        "✨ 让 AI 分析";
-    }
-  }
-
-
-  // ===== 一键分析全部持仓 =====
-  async function analyzeAll() {
-
-    const result =
-      document.getElementById("allResult");
-
-    const btn =
-      document.getElementById("analyzeAllBtn");
-
-
-    result.style.display = "block";
-
-    result.className =
-      "ai-box thinking";
-
-    result.innerText =
-      "🧠 AI正在扫描全部持仓...";
-
-
-    btn.disabled = true;
-
-    btn.innerText =
-      "AI分析中...";
-
-
-    const question = `
-请全面分析我的全部持仓。
-
-重点完成：
-
-1. 按强弱和风险对所有股票排序。
-2. 找出风险最大的股票。
-3. 找出最值得继续观察的股票。
-4. 判断组合是否仓位过高。
-5. 给出持有、观察、减仓观察、风险四种分类。
-6. 说明理由。
-7. 不要编造没有提供的实时行情。
-8. 用普通投资者容易理解的中文回答。
-`;
-
-
-    try {
-
-      const data =
-        await callAI(question);
-
-      result.className =
-        "ai-box";
-
-      result.innerText =
-        formatAI(data);
-
-
-    } catch (error) {
-
-      result.className =
-        "ai-box error";
-
-      result.innerText =
-        "❌ " + error.message;
-
-    } finally {
-
-      btn.disabled = false;
-
-      btn.innerText =
-        "🧠 一键分析全部持仓";
-    }
-  }
-
-
-  renderHoldings();
+renderStocks();
+updateDate();
 
 </script>
 
